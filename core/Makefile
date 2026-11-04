@@ -745,6 +745,13 @@ endif # INTERNAL_USERIMAGES_USE_EXT
 $(BUILT_SYSTEMIMAGE): $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEPS)
 	$(call build-systemimage-target,$@)
 
+# aries: kernel modules are installed by the kernel build, not as
+# PRODUCT_PACKAGES, so systemimage has to wait for zImage.  snod and
+# systemimage-nodeps bypass this on purpose.
+ifneq ($(strip $(TARGET_PREBUILT_KERNEL)),)
+$(BUILT_SYSTEMIMAGE): $(TARGET_PREBUILT_KERNEL)
+endif
+
 INSTALLED_SYSTEMIMAGE := $(PRODUCT_OUT)/system.img
 SYSTEMIMAGE_SOURCE_DIR := $(TARGET_OUT)
 
