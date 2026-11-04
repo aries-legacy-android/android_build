@@ -19,13 +19,9 @@
 # build of the emulator, but all those aspects can be overridden
 # in inherited configurations.
 
-PRODUCT_PACKAGES := \
-    OpenWnn \
-    PinyinIME \
-    VoiceDialer \
-    libWnnEngDic \
-    libWnnJpnDic \
-    libwnndict
+# aries: OpenWnn, PinyinIME, VoiceDialer and the Wnn dictionaries are not
+# present in this tree.
+PRODUCT_PACKAGES :=
 
 # Additional settings used in all AOSP builds
 PRODUCT_PROPERTY_OVERRIDES := \

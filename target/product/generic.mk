@@ -23,11 +23,9 @@ PRODUCT_PACKAGES := \
     AlarmProvider \
     Bluetooth \
     Calculator \
-    Calendar \
     Camera \
     CertInstaller \
     DrmProvider \
-    Email \
     Gallery3D \
     LatinIME \
     Launcher2 \
@@ -40,8 +38,9 @@ PRODUCT_PACKAGES := \
     Sync \
     SystemUI \
     Updater \
-    CalendarProvider \
     SyncProvider
+
+# aries: Calendar, Email and CalendarProvider are not present in this tree.
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core.mk)
 
