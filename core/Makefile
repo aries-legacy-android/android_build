@@ -711,6 +711,49 @@ endif
 
 
 # -----------------------------------------------------------------
+# android_stubs_current
+#
+# aries: modules with LOCAL_SDK_VERSION := current use this jar as their boot
+# classpath.  Its rule normally comes from the development project, which is
+# not part of this tree.
+aries_stubs_intermediates := \
+	$(TARGET_OUT_COMMON_INTERMEDIATES)/JAVA_LIBRARIES/android_stubs_current_intermediates
+aries_stubs_src_dir := $(aries_stubs_intermediates)/src
+aries_stubs_classes_dir := $(aries_stubs_intermediates)/classes
+aries_stubs_classes_jar := $(aries_stubs_intermediates)/classes.jar
+aries_stubs_javalib_jar := $(aries_stubs_intermediates)/javalib.jar
+aries_stubs_framework_res := \
+	$(call intermediates-dir-for,APPS,framework-res,,COMMON)/package-export.apk
+
+$(aries_stubs_classes_jar): PRIVATE_SRC_DIR := $(aries_stubs_src_dir)
+$(aries_stubs_classes_jar): PRIVATE_INTERMEDIATES_DIR := $(aries_stubs_intermediates)
+$(aries_stubs_classes_jar): PRIVATE_CLASS_INTERMEDIATES_DIR := $(aries_stubs_classes_dir)
+$(aries_stubs_classes_jar): PRIVATE_FRAMEWORK_RES := $(aries_stubs_framework_res)
+$(aries_stubs_classes_jar): $(OUT_DOCS)/api-stubs-timestamp $(aries_stubs_framework_res)
+	@echo "Compiling SDK stubs: $@"
+	$(hide) rm -rf $(PRIVATE_CLASS_INTERMEDIATES_DIR)
+	$(hide) mkdir -p $(PRIVATE_CLASS_INTERMEDIATES_DIR)
+	$(hide) find $(PRIVATE_SRC_DIR) -name "*.java" > $(PRIVATE_INTERMEDIATES_DIR)/java-source-list
+	$(hide) $(TARGET_JAVAC) -encoding ascii -bootclasspath "" \
+		-g $(xlint_unchecked) \
+		-extdirs "" -d $(PRIVATE_CLASS_INTERMEDIATES_DIR) \
+		@$(PRIVATE_INTERMEDIATES_DIR)/java-source-list \
+		|| ( rm -rf $(PRIVATE_CLASS_INTERMEDIATES_DIR) ; exit 41 )
+	$(hide) if [ ! -f $(PRIVATE_FRAMEWORK_RES) ]; then \
+		echo "Missing file $(PRIVATE_FRAMEWORK_RES)"; \
+		rm -rf $(PRIVATE_CLASS_INTERMEDIATES_DIR); \
+		exit 1; \
+	fi
+	$(hide) unzip -qo $(PRIVATE_FRAMEWORK_RES) -d $(PRIVATE_CLASS_INTERMEDIATES_DIR)
+	$(hide) (cd $(PRIVATE_CLASS_INTERMEDIATES_DIR) && rm -rf classes.dex META-INF)
+	$(hide) mkdir -p $(dir $@)
+	$(hide) jar -cf $@ -C $(PRIVATE_CLASS_INTERMEDIATES_DIR) .
+	$(hide) jar -u0f $@ -C $(PRIVATE_CLASS_INTERMEDIATES_DIR) resources.arsc
+
+$(aries_stubs_javalib_jar): $(aries_stubs_classes_jar)
+	$(hide) $(ACP) $< $@
+
+# -----------------------------------------------------------------
 # system image
 #
 systemimage_intermediates := \
