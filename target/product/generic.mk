@@ -20,7 +20,6 @@
 PRODUCT_PACKAGES := \
     AccountAndSyncSettings \
     DeskClock \
-    AlarmProvider \
     Bluetooth \
     Calculator \
     Camera \
@@ -35,12 +34,10 @@ PRODUCT_PACKAGES := \
     Protips \
     QuickSearchBox \
     Settings \
-    Sync \
-    SystemUI \
-    Updater \
-    SyncProvider
+    SystemUI
 
-# aries: Calendar, Email and CalendarProvider are not present in this tree.
+# aries: AlarmProvider, Calendar, Email, CalendarProvider, Sync, SyncProvider
+# and Updater have no module in this tree.
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core.mk)
 

@@ -40,7 +40,6 @@ PRODUCT_PACKAGES := \
     ext \
     framework-res \
     hprof-conv \
-    icu.dat \
     jasmin \
     jasmin.jar \
     libcrypto \
@@ -57,7 +56,6 @@ PRODUCT_PACKAGES := \
     sqlite-jdbc \
     Browser \
     Contacts \
-    Home \
     HTMLViewer \
     Phone \
     ApplicationsProvider \
@@ -72,8 +70,7 @@ PRODUCT_PACKAGES := \
     VpnServices \
     UserDictionaryProvider \
     PackageInstaller \
-    DefaultContainerService \
-    Bugreport
+    DefaultContainerService
 
 # host-only dependencies
 ifeq ($(WITH_HOST_DALVIK),true)
