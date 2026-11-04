@@ -324,6 +324,10 @@ $(INSTALLED_RAMDISK_TARGET): $(MKBOOTFS) $(INTERNAL_RAMDISK_FILES) | $(MINIGZIP)
 	$(hide) $(MKBOOTFS) $(TARGET_ROOT_OUT) | $(MINIGZIP) > $@
 
 
+# aries: some bootloaders need an explicit ramdisk load address.  Strip it once
+# so the boot, recovery and OTA rules all see the same string.
+BOARD_FORCE_RAMDISK_ADDRESS := $(strip $(BOARD_FORCE_RAMDISK_ADDRESS))
+
 ifneq ($(strip $(TARGET_NO_KERNEL)),true)
 
 # -----------------------------------------------------------------
@@ -343,6 +347,10 @@ endif
 BOARD_KERNEL_BASE := $(strip $(BOARD_KERNEL_BASE))
 ifdef BOARD_KERNEL_BASE
   INTERNAL_BOOTIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
+endif
+
+ifdef BOARD_FORCE_RAMDISK_ADDRESS
+  INTERNAL_BOOTIMAGE_ARGS += --ramdiskaddr $(BOARD_FORCE_RAMDISK_ADDRESS)
 endif
 
 BOARD_KERNEL_PAGESIZE := $(strip $(BOARD_KERNEL_PAGESIZE))
@@ -628,6 +636,9 @@ ifdef BOARD_KERNEL_CMDLINE
 endif
 ifdef BOARD_KERNEL_BASE
   INTERNAL_RECOVERYIMAGE_ARGS += --base $(BOARD_KERNEL_BASE)
+endif
+ifdef BOARD_FORCE_RAMDISK_ADDRESS
+  INTERNAL_RECOVERYIMAGE_ARGS += --ramdiskaddr $(BOARD_FORCE_RAMDISK_ADDRESS)
 endif
 BOARD_KERNEL_PAGESIZE := $(strip $(BOARD_KERNEL_PAGESIZE))
 ifdef BOARD_KERNEL_PAGESIZE
@@ -953,6 +964,9 @@ endif
 ifdef BOARD_KERNEL_BASE
 	$(hide) echo "$(BOARD_KERNEL_BASE)" > $(zip_root)/RECOVERY/base
 endif
+ifdef BOARD_FORCE_RAMDISK_ADDRESS
+	$(hide) echo "$(BOARD_FORCE_RAMDISK_ADDRESS)" > $(zip_root)/RECOVERY/ramdiskaddr
+endif
 ifdef BOARD_KERNEL_PAGESIZE
 	$(hide) echo "$(BOARD_KERNEL_PAGESIZE)" > $(zip_root)/RECOVERY/pagesize
 endif
@@ -972,6 +986,9 @@ ifdef BOARD_KERNEL_CMDLINE
 endif
 ifdef BOARD_KERNEL_BASE
 	$(hide) echo "$(BOARD_KERNEL_BASE)" > $(zip_root)/BOOT/base
+endif
+ifdef BOARD_FORCE_RAMDISK_ADDRESS
+	$(hide) echo "$(BOARD_FORCE_RAMDISK_ADDRESS)" > $(zip_root)/BOOT/ramdiskaddr
 endif
 ifdef BOARD_KERNEL_PAGESIZE
 	$(hide) echo "$(BOARD_KERNEL_PAGESIZE)" > $(zip_root)/BOOT/pagesize
