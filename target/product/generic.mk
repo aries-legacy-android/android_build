@@ -25,6 +25,7 @@ PRODUCT_PACKAGES := \
     Camera \
     CertInstaller \
     DrmProvider \
+    FileManager \
     Gallery3D \
     LatinIME \
     Launcher2 \
