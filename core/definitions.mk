@@ -1825,3 +1825,113 @@ include $(BUILD_SYSTEM)/user_tags.mk
 #	  sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
 #	      -e '/^$$/ d' -e 's/$$/ :/' < $*.d >> $*.P; \
 #	  rm -f $*.d
+
+###########################################################
+## Qualcomm module helpers
+##
+## Vendor makefiles gate themselves with these; gingerbread's build system
+## has no equivalent. Semantics follow the vendor tree so that every
+## condition evaluates as it did on 4.1.
+###########################################################
+
+qcom_colon := $(empty):$(empty)
+qcom_underscore := $(empty)_$(empty)
+
+# $(call match-word,w1,w2): "true" when both words are identical.
+define match-word
+$(strip \
+  $(if $(or $(subst $(1),$(empty),$(2)),$(subst $(2),$(empty),$(1))),,true) \
+)
+endef
+
+# $(call find-word-in-list,w,wlist): returns w when it appears in wlist.
+define find-word-in-list
+$(strip \
+  $(eval qcom_wl := $(qcom_colon)$(subst $(space),$(qcom_colon),$(strip $(2)))$(qcom_colon)) \
+  $(eval qcom_w := $(qcom_colon)$(strip $(1))$(qcom_colon)) \
+  $(eval qcom_m := $(findstring $(qcom_w),$(qcom_wl))) \
+  $(if $(qcom_m),$(1),) \
+)
+endef
+
+# $(call match-word-in-list,w,wlist): "true" when wlist contains w exactly.
+define match-word-in-list
+$(strip \
+  $(if $(strip $(1)), \
+    $(call match-word,$(call find-word-in-list,$(1),$(2)),$(strip $(1))), \
+  ) \
+)
+endef
+
+# $(call match-prefix,p,delim,wlist): "true" when a word is p followed by delim.
+define match-prefix
+$(strip \
+  $(eval qcom_w := $(strip $(1)$(strip $(2)))) \
+  $(eval qcom_text := $(patsubst $(qcom_w)%,$(1),$(3))) \
+  $(if $(call match-word-in-list,$(1),$(qcom_text)),true,) \
+)
+endef
+
+define is-board-platform
+$(call match-word,$(1),$(TARGET_BOARD_PLATFORM))
+endef
+
+define is-not-board-platform
+$(if $(call match-word,$(1),$(TARGET_BOARD_PLATFORM)),,true)
+endef
+
+define is-board-platform-in-list
+$(call match-word-in-list,$(TARGET_BOARD_PLATFORM),$(1))
+endef
+
+define is-chipset-in-board-platform
+$(call match-prefix,$(1),$(qcom_underscore),$(TARGET_BOARD_PLATFORM))
+endef
+
+define is-chipset-prefix-in-board-platform
+$(strip \
+  $(eval qcom_delim_a := $(empty)a$(empty)) \
+  $(if \
+    $(or \
+      $(call match-prefix,$(1),$(qcom_delim_a),$(TARGET_BOARD_PLATFORM)), \
+      $(call match-prefix,$(1),$(qcom_underscore),$(TARGET_BOARD_PLATFORM)), \
+    ), \
+    true, \
+  ) \
+)
+endef
+
+CUPCAKE_SDK_VERSIONS := 3
+DONUT_SDK_VERSIONS := 4
+ECLAIR_SDK_VERSIONS := 5 6 7
+FROYO_SDK_VERSIONS := 8
+GINGERBREAD_SDK_VERSIONS := 9 10
+HONEYCOMB_SDK_VERSIONS := 11 12 13
+ICECREAM_SANDWICH_SDK_VERSIONS := 14 15
+JELLY_BEAN_SDK_VERSIONS := 16
+
+# $(call is-android-codename,codename): "true" when the SDK version matches.
+define is-android-codename
+$(strip \
+  $(if \
+    $(call match-word-in-list,$(PLATFORM_SDK_VERSION),$($(1)_SDK_VERSIONS)), \
+    true, \
+  ) \
+)
+endef
+
+# $(call is-android-codename-in-list,cnlist): "true" when any entry matches.
+define is-android-codename-in-list
+$(strip \
+  $(eval qcom_acn := $(empty)) \
+  $(foreach i,$(1), \
+    $(eval qcom_acn += \
+      $(if \
+        $(call match-word-in-list,$(PLATFORM_SDK_VERSION),$($(i)_SDK_VERSIONS)), \
+        true, \
+      ) \
+    ) \
+  ) \
+  $(if $(strip $(qcom_acn)),true,) \
+)
+endef
